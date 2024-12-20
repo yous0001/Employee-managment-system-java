@@ -1,5 +1,9 @@
 package employeemangmentsystem;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javax.swing.JOptionPane;
 
 
@@ -23,22 +27,21 @@ public class PayrollSystem {
     public void withdraw(int balance){
         this.balance-=balance;
     }
-    public void payDepartmentSalaries(Department department){
-        int total=department.getTotalSalaries();
-        if(balance>=total){
-            int salary;
-            for(Employee em:department.getEmpArray()){
-                salary=em.calcSalary();
-                em.deposit(salary);
+    public void paySalaries(){
+        String query="SELECT SUM(base_salary) AS TotalSalaries FROM employee WHERE 1";
+        
+        Connection con = DatabaseConnectionManager.getInstance().getConnection();
+        try (Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                int total=rs.getInt("TotalSalaries");
+                JOptionPane.showMessageDialog(null,"Total salaries are:"+total);
             }
-            int departmentTaxes=(int)(taxes*total);
-            balance-=total;
-            balance-=departmentTaxes;
-            JOptionPane.showMessageDialog(null, "Salaries payed successfully: " + total+" EGP and taxes: "+departmentTaxes+"\n Remaining balance: "+balance);
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
-        else{
-            JOptionPane.showMessageDialog(null, "balance isn't enough");
-        }
+
     }
     
 }
